@@ -2,24 +2,27 @@ package com.example.cafe.controllers;
 
 import com.example.cafe.entity.Product;
 import com.example.cafe.security.services.ProductService;
+import com.example.cafe.services.CloudinaryService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
     private final ProductService service;
+    private final CloudinaryService cloudinaryService;
 
-    public ProductController(ProductService service) {
+    @Autowired
+    private ProductService productService;
+
+    public ProductController(ProductService service, CloudinaryService cloudinaryService) {
         this.service = service;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @GetMapping
@@ -34,57 +37,90 @@ public class ProductController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // ✅ Thêm sản phẩm (kèm upload ảnh)
+    // ✅ Thêm sản phẩm (upload ảnh lên Cloudinary)
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Product> create(
+    public ResponseEntity<?> create(
             @RequestPart("product") Product product,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {
+        
+        try {
+            if (imageFile != null && !imageFile.isEmpty()) {
+                // ✅ Upload lên Cloudinary
+                String imageUrl = cloudinaryService.uploadImage(imageFile, "products");
+                product.setImageUrl(imageUrl);
+            } else {
+                product.setImageUrl(null);
+            }
 
-        if (imageFile != null && !imageFile.isEmpty()) {
-            String fileName = service.saveImage(imageFile);
-            product.setImageUrl(fileName);
-        } else {
-            product.setImageUrl("default.png");
+            Product savedProduct = service.save(product);
+            return ResponseEntity.ok(savedProduct);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error creating product: " + e.getMessage());
         }
-
-        return ResponseEntity.ok(service.save(product));
     }
 
-    // ✅ Cập nhật sản phẩm (có thể thay ảnh)
+    // ✅ Cập nhật sản phẩm (có thể thay ảnh trên Cloudinary)
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Product> update(
+    public ResponseEntity<?> update(
             @PathVariable Long id,
             @RequestPart("product") Product product,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {
+        
+        try {
+            // Lấy sản phẩm hiện tại
+            Product existingProduct = service.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        if (imageFile != null && !imageFile.isEmpty()) {
-            String fileName = service.saveImage(imageFile);
-            product.setImageUrl(fileName);
+            if (imageFile != null && !imageFile.isEmpty()) {
+                // ✅ Xóa ảnh cũ trên Cloudinary (nếu có)
+                if (existingProduct.getImageUrl() != null) {
+                    cloudinaryService.deleteImage(existingProduct.getImageUrl());
+                }
+
+                // ✅ Upload ảnh mới lên Cloudinary
+                String newImageUrl = cloudinaryService.uploadImage(imageFile, "products");
+                product.setImageUrl(newImageUrl);
+            } else {
+                // Giữ nguyên ảnh cũ nếu không upload ảnh mới
+                product.setImageUrl(existingProduct.getImageUrl());
+            }
+
+            Product updatedProduct = service.update(id, product);
+            return ResponseEntity.ok(updatedProduct);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating product: " + e.getMessage());
         }
-
-        return ResponseEntity.ok(service.update(id, product));
     }
 
-    // ✅ Xóa sản phẩm
+    // ✅ Xóa sản phẩm (và xóa ảnh trên Cloudinary)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        try {
+            // Lấy sản phẩm để lấy URL ảnh
+            Product product = service.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+
+            // ✅ Xóa ảnh trên Cloudinary
+            if (product.getImageUrl() != null) {
+                cloudinaryService.deleteImage(product.getImageUrl());
+            }
+
+            // Xóa sản phẩm trong database
+            service.delete(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting product: " + e.getMessage());
+        }
     }
 
-    @GetMapping("/image/{fileName}")
-    public ResponseEntity<InputStreamResource> getImage(@PathVariable String fileName) throws FileNotFoundException {
-        InputStream imageStream = service.getImage(fileName);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.IMAGE_JPEG);
-        headers.setContentDispositionFormData("inline", fileName);
-        return new ResponseEntity<>(new InputStreamResource(imageStream), headers, HttpStatus.OK);
-    }
+    // ❌ XÓA endpoint này vì không cần nữa (ảnh đã lưu trên Cloudinary)
+    // @GetMapping("/image/{fileName}")
+    // public ResponseEntity<InputStreamResource> getImage(@PathVariable String fileName) { ... }
 
     // Lấy sản phẩm theo ID danh mục
-    @Autowired
-    private ProductService productService;
-
     @GetMapping("/category/{categoryId}")
     public List<Product> getProductsByCategory(@PathVariable Long categoryId) {
         return productService.getProductsByCategory(categoryId);
@@ -95,7 +131,6 @@ public class ProductController {
     public List<Product> getNewestProducts() {
         return productService.getNewestProducts();
     }
-
 
     @PutMapping("/{id}/reduce-stock")
     public ResponseEntity<Product> reduceStock(
@@ -110,16 +145,10 @@ public class ProductController {
         }
     }
 
-
-
-
-
-
-//  Lấy sản phẩm có khuyến mãi đang hoạt động
+    // Lấy sản phẩm có khuyến mãi đang hoạt động
     @GetMapping("/with-promotions")
-public ResponseEntity<List<Product>> getProductsWithPromotions() {
-    List<Product> products = productService.getProductsWithActivePromotions();
-    return ResponseEntity.ok(products);
-}
-
+    public ResponseEntity<List<Product>> getProductsWithPromotions() {
+        List<Product> products = productService.getProductsWithActivePromotions();
+        return ResponseEntity.ok(products);
+    }
 }

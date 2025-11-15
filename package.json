@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "cloudinary": "^2.8.0",
+    "mysql2": "^3.15.3"
+  }
+}
