@@ -227,7 +227,10 @@ public class SecurityConfig {
             "http://localhost:5173",
             "http://localhost:5174",
             "http://localhost:3003",
-            "http://localhost:3000"
+            "http://localhost:3000",
+            // Production - Socket.IO
+            "https://hethongquanlycoffeeshop-socketio-production.up.railway.app",
+            "https://he-thong-quan-ly-coffee-shop-fronte.vercel.app"
         ));
 
         // Cho phép các phương thức HTTP
