@@ -231,7 +231,8 @@ public class SecurityConfig {
             // Production - Socket.IO
             "https://hethongquanlycoffeeshop-socketio-production.up.railway.app",
             "https://he-thong-quan-ly-coffee-shop-fronte.vercel.app",
-            "https://he-thong-quan-ly-coffee-shop-fronte-rosy.vercel.app"
+            "https://he-thong-quan-ly-coffee-shop-fronte-rosy.vercel.app",
+            "https://he-thong-quan-ly-coffee-shop-fronte-theta.vercel.app"
         ));
 
         // Cho phép các phương thức HTTP
