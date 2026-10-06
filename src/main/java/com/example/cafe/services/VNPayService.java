@@ -1,6 +1,7 @@
 package com.example.cafe.services;
 
 import com.example.cafe.config.VNPayConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
@@ -13,29 +14,32 @@ import java.util.*;
 @Service
 public class VNPayService {
 
+    @Autowired
+    private VNPayConfig vnPayConfig;
+
     /**
      * Tạo URL thanh toán VNPay
      */
     public String createPaymentUrl(String orderId, long amount, String orderInfo, String ipAddress) {
         try {
             Map<String, String> vnp_Params = new HashMap<>();
-            
+
             // Thông tin cơ bản
-            vnp_Params.put("vnp_Version", VNPayConfig.vnp_Version);
-            vnp_Params.put("vnp_Command", VNPayConfig.vnp_Command);
-            vnp_Params.put("vnp_TmnCode", VNPayConfig.vnp_TmnCode);
+            vnp_Params.put("vnp_Version", vnPayConfig.vnp_Version);
+            vnp_Params.put("vnp_Command", vnPayConfig.vnp_Command);
+            vnp_Params.put("vnp_TmnCode", vnPayConfig.vnp_TmnCode);
             vnp_Params.put("vnp_Amount", String.valueOf(amount * 100)); // VNPay yêu cầu nhân 100
-            vnp_Params.put("vnp_CurrCode", VNPayConfig.vnp_CurrCode);
-            
+            vnp_Params.put("vnp_CurrCode", vnPayConfig.vnp_CurrCode);
+
             // Mã giao dịch (unique)
             String vnp_TxnRef = orderId + "_" + System.currentTimeMillis();
             vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
             vnp_Params.put("vnp_OrderInfo", orderInfo);
-            vnp_Params.put("vnp_OrderType", "other"); // Loại đơn hàng
-            
-            // Ngôn ngữ và IP
-            vnp_Params.put("vnp_Locale", VNPayConfig.vnp_Locale);
-            vnp_Params.put("vnp_ReturnUrl", VNPayConfig.vnp_ReturnUrl);
+            vnp_Params.put("vnp_OrderType", vnPayConfig.vnp_OrderType);
+
+            // Ngôn ngữ và URL
+            vnp_Params.put("vnp_Locale", vnPayConfig.vnp_Locale);
+            vnp_Params.put("vnp_ReturnUrl", vnPayConfig.vnp_ReturnUrl);
             vnp_Params.put("vnp_IpAddr", ipAddress);
 
             // Thời gian tạo và hết hạn
@@ -43,47 +47,52 @@ public class VNPayService {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
             String vnp_CreateDate = formatter.format(cld.getTime());
             vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
-            
-            cld.add(Calendar.MINUTE, 15); // Hết hạn sau 15 phút
+
+            cld.add(Calendar.MINUTE, 15);
             String vnp_ExpireDate = formatter.format(cld.getTime());
             vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
 
-            // Sắp xếp params theo thứ tự alphabet
+            // Sắp xếp params theo alphabet
             List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
             Collections.sort(fieldNames);
-            
-            // Tạo query string
+
             StringBuilder hashData = new StringBuilder();
             StringBuilder query = new StringBuilder();
-            
+
             Iterator<String> itr = fieldNames.iterator();
             while (itr.hasNext()) {
                 String fieldName = itr.next();
                 String fieldValue = vnp_Params.get(fieldName);
                 if ((fieldValue != null) && (fieldValue.length() > 0)) {
-                    // Build hash data
                     hashData.append(fieldName);
                     hashData.append('=');
                     hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
-                    
-                    // Build query
+
                     query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()));
                     query.append('=');
                     query.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
-                    
+
                     if (itr.hasNext()) {
                         query.append('&');
                         hashData.append('&');
                     }
                 }
             }
-            
+
             String queryUrl = query.toString();
-            String vnp_SecureHash = hmacSHA512(VNPayConfig.vnp_HashSecret, hashData.toString());
+            String vnp_SecureHash = hmacSHA512(vnPayConfig.vnp_HashSecret, hashData.toString());
             queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
-            
-            return VNPayConfig.vnp_Url + "?" + queryUrl;
-            
+
+            String paymentUrl = vnPayConfig.vnp_Url + "?" + queryUrl;
+
+            System.out.println("\n🔗 VNPay Payment URL:");
+            System.out.println("   TmnCode: " + vnPayConfig.vnp_TmnCode);
+            System.out.println("   Amount: " + amount + " VND");
+            System.out.println("   TxnRef: " + vnp_TxnRef);
+            System.out.println("   URL: " + paymentUrl);
+
+            return paymentUrl;
+
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -98,14 +107,13 @@ public class VNPayService {
             String vnp_SecureHash = params.get("vnp_SecureHash");
             params.remove("vnp_SecureHashType");
             params.remove("vnp_SecureHash");
-            
-            // Sắp xếp params
+
             List<String> fieldNames = new ArrayList<>(params.keySet());
             Collections.sort(fieldNames);
-            
+
             StringBuilder hashData = new StringBuilder();
             Iterator<String> itr = fieldNames.iterator();
-            
+
             while (itr.hasNext()) {
                 String fieldName = itr.next();
                 String fieldValue = params.get(fieldName);
@@ -118,10 +126,16 @@ public class VNPayService {
                     }
                 }
             }
-            
-            String calculatedHash = hmacSHA512(VNPayConfig.vnp_HashSecret, hashData.toString());
+
+            String calculatedHash = hmacSHA512(vnPayConfig.vnp_HashSecret, hashData.toString());
+
+            System.out.println("\n🔐 VNPAY Verify Hash:");
+            System.out.println("   From VNPAY: " + vnp_SecureHash);
+            System.out.println("   Calculated: " + calculatedHash);
+            System.out.println("   Match: " + calculatedHash.equals(vnp_SecureHash));
+
             return calculatedHash.equals(vnp_SecureHash);
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -137,13 +151,13 @@ public class VNPayService {
             SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA512");
             hmac512.init(secretKey);
             byte[] result = hmac512.doFinal(data.getBytes(StandardCharsets.UTF_8));
-            
+
             StringBuilder sb = new StringBuilder(2 * result.length);
             for (byte b : result) {
                 sb.append(String.format("%02x", b & 0xff));
             }
             return sb.toString();
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             return "";

@@ -22,98 +22,105 @@
 // @Configuration
 // public class SecurityConfig {
 
-//         private final JwtFilter jwtFilter;
+//     private final JwtFilter jwtFilter;
 
-//         public SecurityConfig(JwtFilter jwtFilter) {
-//                 this.jwtFilter = jwtFilter;
-//         }
+//     public SecurityConfig(JwtFilter jwtFilter) {
+//         this.jwtFilter = jwtFilter;
+//     }
 
-//         @Bean
-//         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//                 http
+//     @Bean
+//     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//         http
+//             .csrf(csrf -> csrf.disable())
+//             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+//             .authorizeHttpRequests(auth -> auth
+//                 .requestMatchers("/api/payment/**").permitAll()
+//                 .requestMatchers("/api/momo/**").permitAll()
+//                 .requestMatchers(
+//                     "/api/auth/**",
+//                     "/api/products/image/**",
+//                     "/api/users/image/**"
+//                 ).permitAll()
+//                 .requestMatchers(HttpMethod.GET,
+//                     "/api/products/**",
+//                     "/api/products/category/**",
+//                     "/api/tables/**",
+//                     "/api/categories/**",
+//                     "/api/orders/**"
+//                 ).permitAll()
+//                 .requestMatchers(HttpMethod.POST,
+//                     "/api/orders/**",
+//                     "/api/bills/**",
+//                     "/api/order-items/**"
+//                 ).permitAll()
+//                 .requestMatchers(HttpMethod.PUT,
+//                     "/api/products/**",
+//                     "/api/tables/**"
+//                 ).permitAll()
+//                 .anyRequest().authenticated()
+//             )
+//             .sessionManagement(session -> session
+//                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//             );
 
-//                                 .csrf(csrf -> csrf.disable())
+//         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-//                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+//         return http.build();
+//     }
 
-//                                 // Cấu hình quyền truy cập
-//                                 .authorizeHttpRequests(auth -> auth
-//                                                 // Cho phép không cần token
-//                                                 .requestMatchers(
-//                                                                 "/api/auth/**", // Đăng nhập / đăng ký
-//                                                                 "/api/products/image/**",
-//                                                                 "/api/users/image/**"
+//     @Bean
+//     public CorsConfigurationSource corsConfigurationSource() {
+//         CorsConfiguration configuration = new CorsConfiguration();
 
-//                                                 ).permitAll()
-//                                                 .requestMatchers(HttpMethod.GET,
-//                                                                 "/api/products/**",
-//                                                                 "/api/products/category/**",
-//                                                                 "/api/tables/**",
-//                                                                 "/api/categories/**"
+//         configuration.setAllowedOrigins(Arrays.asList(
+//             "http://localhost:5173",
+//             "http://localhost:5174",
+//             "http://localhost:3003",
+//             "http://localhost:3000"
+//         ));
 
-//                                                 ).permitAll()
-//                                                 .requestMatchers(HttpMethod.POST,
-//                                                                 "/api/orders/**",
-//                                                                 "/api/bills/**",
-//                                                                 "/api/order-items/**")
-//                                                 .permitAll()
-//                                                 .requestMatchers(HttpMethod.PUT,
-//                                                                 "/api/products/**",
-//                                                                 "/api/tables/**")
-//                                                 .permitAll()
-//                                                 .anyRequest().authenticated())
-//                                 .sessionManagement(session -> session
-//                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+//         configuration.setAllowedMethods(Arrays.asList(
+//             "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+//         ));
 
-//                 // 🔄 Thêm JWT Filter trước UsernamePasswordAuthenticationFilter
-//                 http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+//         configuration.setAllowedHeaders(Arrays.asList(
+//             "Authorization",
+//             "Content-Type",
+//             "Accept",
+//             "X-Requested-With"
+//         ));
 
-//                 return http.build();
-//         }
+//         configuration.setAllowCredentials(true);
+//         configuration.setExposedHeaders(List.of("Authorization"));
+//         configuration.setMaxAge(3600L);
 
-//         @Bean
-//         public CorsConfigurationSource corsConfigurationSource() {
-//                 CorsConfiguration configuration = new CorsConfiguration();
+//         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//         source.registerCorsConfiguration("/api/**", configuration);
 
-//                 // 🌍 Cho phép các frontend (React)
-//                 configuration.setAllowedOrigins(Arrays.asList(
-//                                 "http://localhost:5173",
-//                                 "http://localhost:5174",
-//                                 "http://localhost:3003",
-//                                 "http://localhost:3000"));
+//         return source;
+//     }
 
-//                 // Cho phép các phương thức HTTP
-//                 configuration.setAllowedMethods(Arrays.asList(
-//                                 "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+//     @Bean
+//     public PasswordEncoder passwordEncoder() {
+//         return new BCryptPasswordEncoder();
+//     }
 
-//                 // Cho phép các header
-//                 configuration.setAllowedHeaders(Arrays.asList(
-//                                 "Authorization", "Content-Type", "Accept", "X-Requested-With"));
-//                 // Cho phép gửi credentials (JWT header)
-//                 configuration.setAllowCredentials(true);
-
-//                 // Header trả về cho client
-//                 configuration.setExposedHeaders(List.of("Authorization"));
-
-//                 // Cache preflight request
-//                 configuration.setMaxAge(3600L);
-
-//                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//                 source.registerCorsConfiguration("/api/**", configuration);
-
-//                 return source;
-//         }
-
-//         @Bean
-//         public PasswordEncoder passwordEncoder() {
-//                 return new BCryptPasswordEncoder();
-//         }
-
-//         @Bean
-//         public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-//                 return config.getAuthenticationManager();
-//         }
+//     @Bean
+//     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+//         return config.getAuthenticationManager();
+//     }
 // }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -171,48 +178,70 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            
-            // Cấu hình quyền truy cập
             .authorizeHttpRequests(auth -> auth
-                // ✅ CHO PHÉP PAYMENT API (KHÔNG CẦN TOKEN)
+                // ============================================
+                // PUBLIC: Payment gateways
+                // ============================================
                 .requestMatchers("/api/payment/**").permitAll()
-                .requestMatchers("/api/momo/**").permitAll() 
-                // Cho phép không cần token
+                .requestMatchers("/api/momo/**").permitAll()
+
+                // ============================================
+                // PUBLIC: Auth + Image serving
+                // ============================================
                 .requestMatchers(
                     "/api/auth/**",
                     "/api/products/image/**",
                     "/api/users/image/**"
                 ).permitAll()
-                
+
+                // ============================================
+                // PUBLIC: GET (khách/staff xem menu, đơn, bàn)
+                // ============================================
                 .requestMatchers(HttpMethod.GET,
                     "/api/products/**",
                     "/api/products/category/**",
                     "/api/tables/**",
                     "/api/categories/**",
-                    "/api/orders/**"
+                    "/api/orders/**",
+                    "/api/order-items/**",
+                    "/api/bills/**",
+                    "/api/promotions/**",
+                    "/api/reports/**"
                 ).permitAll()
-                
+
+                // ============================================
+                // PUBLIC: POST cho khách đặt hàng / POS tạo đơn
+                // ============================================
                 .requestMatchers(HttpMethod.POST,
                     "/api/orders/**",
                     "/api/bills/**",
                     "/api/order-items/**"
                 ).permitAll()
-                
-                .requestMatchers(HttpMethod.PUT,
-                    "/api/products/**",
-                    "/api/tables/**"
-                ).permitAll()
-                
+
+                // ============================================
+                // LOGS: CHỈ ADMIN (cả GET và các method khác)
+                // ============================================
+                .requestMatchers("/api/logs/**").hasRole("ADMIN")
+
+                // ============================================
+                // ADMIN ONLY: Quản lý sản phẩm / danh mục / KM / bàn / user
+                // ============================================
+                .requestMatchers("/api/products/**").hasRole("ADMIN")
+                .requestMatchers("/api/categories/**").hasRole("ADMIN")
+                .requestMatchers("/api/promotions/**").hasRole("ADMIN")
+                .requestMatchers("/api/tables/**").hasRole("ADMIN")
+                .requestMatchers("/api/users/**").hasRole("ADMIN")
+
+                // ============================================
+                // CÒN LẠI: phải đăng nhập
+                // ============================================
                 .anyRequest().authenticated()
             )
-            
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             );
 
-        // 🔄 Thêm JWT Filter trước UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -222,36 +251,26 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // 🌍 Cho phép các frontend (React)
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:5173",
             "http://localhost:5174",
             "http://localhost:3003",
-            "http://localhost:3000",
-            // Production - Socket.IO
-            "https://hethongquanlycoffeeshop-socketio-production.up.railway.app",
-            "https://he-thong-quan-ly-coffee-shop-fronte.vercel.app",
-            "https://he-thong-quan-ly-coffee-shop-fronte-rosy.vercel.app",
-            "https://he-thong-quan-ly-coffee-shop-fronte-theta.vercel.app"
+            "http://localhost:3000"
         ));
 
-        // Cho phép các phương thức HTTP
         configuration.setAllowedMethods(Arrays.asList(
             "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
         ));
 
-        // Cho phép các header
         configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization", "Content-Type", "Accept", "X-Requested-With"
+            "Authorization",
+            "Content-Type",
+            "Accept",
+            "X-Requested-With"
         ));
-        
-        // Cho phép gửi credentials (JWT header)
+
         configuration.setAllowCredentials(true);
-
-        // Header trả về cho client
         configuration.setExposedHeaders(List.of("Authorization"));
-
-        // Cache preflight request
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

@@ -1,6 +1,10 @@
 package com.example.cafe.services;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.example.cafe.config.MoMoConfig;
+import com.example.cafe.dto.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -8,199 +12,175 @@ import org.springframework.web.client.RestTemplate;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.UUID;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class MoMoService {
-
-    @Value("${momo.partner-code}")
-    private String partnerCode;
-
-    @Value("${momo.access-key}")
-    private String accessKey;
-
-    @Value("${momo.secret-key}")
-    private String secretKey;
-
-    @Value("${momo.endpoint}")
-    private String endpoint;
-
-    @Value("${momo.return-url}")
-    private String returnUrl;
-
-    @Value("${momo.notify-url}")
-    private String notifyUrl;
-
-    public Map<String, Object> createPayment(String orderId, Long amount, String orderInfo) {
+    
+    private final MoMoConfig momoConfig;
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    
+    /**
+     * Tạo URL thanh toán MoMo
+     */
+    public PaymentApiResponse createPaymentUrl(String orderId, Long amount, String orderInfo) {
         try {
-            // ✅ LOG ĐỂ DEBUG
-            System.out.println("\n🔐 ==========================================");
-            System.out.println("🔐 MOMO CONFIGURATION CHECK");
-            System.out.println("🔐 ==========================================");
-            System.out.println("   - Partner Code: " + partnerCode);
-            System.out.println("   - Access Key: " + (accessKey != null ? accessKey.substring(0, Math.min(10, accessKey.length())) + "..." : "NULL"));
-            System.out.println("   - Secret Key: " + (secretKey != null ? secretKey.substring(0, Math.min(10, secretKey.length())) + "..." : "NULL"));
-            System.out.println("   - Endpoint: " + endpoint);
-            System.out.println("   - Return URL: " + returnUrl);
-            System.out.println("   - Notify URL: " + notifyUrl);
-            System.out.println("==========================================\n");
-
-            // ✅ KIỂM TRA NULL
-            if (partnerCode == null || accessKey == null || secretKey == null) {
-                throw new RuntimeException("❌ MoMo credentials chưa được cấu hình! Kiểm tra Railway Environment Variables.");
-            }
-
+            log.info("🔵 Đang tạo MoMo payment URL cho Order: {}, Amount: {}", orderId, amount);
+            
+            // 1. Tạo requestId unique
             String requestId = UUID.randomUUID().toString();
-            String extraData = ""; // ✅ Empty string, NOT null
-
-            // ✅ QUAN TRỌNG: Thứ tự params theo MoMo docs
-            String rawSignature = String.format(
-                "accessKey=%s&amount=%d&extraData=%s&ipnUrl=%s&orderId=%s&orderInfo=%s&partnerCode=%s&redirectUrl=%s&requestId=%s&requestType=captureWallet",
-                accessKey,
-                amount,
-                extraData,
-                notifyUrl,
-                orderId,
-                orderInfo,
-                partnerCode,
-                returnUrl,
-                requestId
-            );
-
-            System.out.println("\n📝 Raw Signature String:");
-            System.out.println(rawSignature);
-
-            // ✅ TẠO SIGNATURE
-            String signature = generateHmacSHA256(rawSignature, secretKey);
-            System.out.println("\n✅ Generated Signature: " + signature);
-
-            // ✅ TẠO REQUEST BODY (theo thứ tự alphabet - best practice)
-            Map<String, Object> requestBody = new LinkedHashMap<>();
-            requestBody.put("accessKey", accessKey);
-            requestBody.put("amount", amount);
-            requestBody.put("extraData", extraData);
-            requestBody.put("ipnUrl", notifyUrl);
-            requestBody.put("lang", "vi");
-            requestBody.put("orderId", orderId);
-            requestBody.put("orderInfo", orderInfo);
-            requestBody.put("partnerCode", partnerCode);
-            requestBody.put("partnerName", "Coffee Shop");
-            requestBody.put("redirectUrl", returnUrl);
-            requestBody.put("requestId", requestId);
-            requestBody.put("requestType", "captureWallet");
-            requestBody.put("signature", signature);
-            requestBody.put("storeId", "CoffeeShop01");
-
-            System.out.println("\n📦 Request Body:");
-            System.out.println(new com.google.gson.Gson().toJson(requestBody));
-
-            // ✅ GỬI REQUEST
-            RestTemplate restTemplate = new RestTemplate();
+            
+            // 2. Tạo chữ ký HMAC SHA256
+            String signature = generateSignature(requestId, orderId, amount, orderInfo); // ✅ Đã thêm orderInfo
+            
+            // 3. Build request
+            MoMoPaymentRequest request = MoMoPaymentRequest.builder()
+                    .partnerCode(momoConfig.getPartnerCode())
+                    .accessKey(momoConfig.getAccessKey())
+                    .requestId(requestId)
+                    .amount(amount)
+                    .orderId(orderId)
+                    .orderInfo(orderInfo)
+                    .redirectUrl(momoConfig.getReturnUrl())
+                    .ipnUrl(momoConfig.getNotifyUrl())
+                    .extraData("")
+                    .requestType(momoConfig.getRequestType())
+                    .signature(signature)
+                    .lang("vi")
+                    .build();
+            
+            log.info("📤 Gửi request đến MoMo: {}", objectMapper.writeValueAsString(request));
+            
+            // 4. Gọi MoMo API
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
             
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                endpoint,
-                entity,
-                Map.class
+            HttpEntity<MoMoPaymentRequest> entity = new HttpEntity<>(request, headers);
+            
+            ResponseEntity<MoMoPaymentResponse> response = restTemplate.exchange(
+                    momoConfig.getEndpoint(),
+                    HttpMethod.POST,
+                    entity,
+                    MoMoPaymentResponse.class
             );
-
-            Map<String, Object> responseBody = response.getBody();
-            System.out.println("\n📥 MoMo Response:");
-            System.out.println(new com.google.gson.Gson().toJson(responseBody));
-
-            // ✅ XỬ LÝ RESPONSE
-            Integer resultCode = (Integer) responseBody.get("resultCode");
-
-            Map<String, Object> result = new HashMap<>();
             
-            if (resultCode != null && resultCode == 0) {
-                result.put("success", true);
-                result.put("paymentUrl", responseBody.get("payUrl"));
-                result.put("orderId", orderId);
-                result.put("message", "Tạo thanh toán MoMo thành công");
-            } else {
-                result.put("success", false);
-                result.put("message", responseBody.get("message"));
-                result.put("resultCode", resultCode);
+            MoMoPaymentResponse momoResponse = response.getBody();
+            
+            if (momoResponse != null && momoResponse.isSuccess()) {
+                log.info("✅ MoMo response thành công: {}", objectMapper.writeValueAsString(momoResponse));
                 
-                System.err.println("❌ MoMo Error Code: " + resultCode);
-                System.err.println("❌ MoMo Message: " + responseBody.get("message"));
+                return PaymentApiResponse.builder()
+                        .success(true)
+                        .message("Tạo thanh toán thành công")
+                        .paymentUrl(momoResponse.getPayUrl())
+                        .qrCodeUrl(momoResponse.getQrCodeUrl())
+                        .data(momoResponse)
+                        .build();
+            } else {
+                log.error("❌ MoMo response thất bại: {}", momoResponse);
+                
+                return PaymentApiResponse.builder()
+                        .success(false)
+                        .message(momoResponse != null ? momoResponse.getMessage() : "Lỗi không xác định")
+                        .build();
             }
-
-            return result;
-
+            
         } catch (Exception e) {
-            System.err.println("\n❌ ==========================================");
-            System.err.println("❌ MOMO SERVICE ERROR");
-            System.err.println("❌ ==========================================");
-            e.printStackTrace();
-            System.err.println("❌ ==========================================\n");
-
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("success", false);
-            errorResponse.put("message", "Lỗi hệ thống: " + e.getMessage());
-            return errorResponse;
+            log.error("❌ Exception khi tạo MoMo payment: ", e);
+            
+            return PaymentApiResponse.builder()
+                    .success(false)
+                    .message("Lỗi hệ thống: " + e.getMessage())
+                    .build();
         }
     }
-
-    // ✅ HÀM TẠO HMAC SHA256
-    private String generateHmacSHA256(String data, String key) throws Exception {
-        try {
-            Mac hmacSHA256 = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKeySpec = new SecretKeySpec(
-                key.getBytes(StandardCharsets.UTF_8), 
+    
+    /**
+     * Tạo chữ ký HMAC SHA256
+     */
+    private String generateSignature(String requestId, String orderId, Long amount, String orderInfo) throws Exception {
+        // ✅ Thêm tham số orderInfo vào hàm
+        
+        // ✅ Format ĐÚNG theo docs MoMo (sắp xếp alphabetically)
+        String rawSignature = "accessKey=" + momoConfig.getAccessKey() +
+                "&amount=" + amount +
+                "&extraData=" +  // ✅ Để trống (empty string)
+                "&ipnUrl=" + momoConfig.getNotifyUrl() +
+                "&orderId=" + orderId +
+                "&orderInfo=" + orderInfo +  // ✅ Dùng orderInfo từ tham số, không hardcode
+                "&partnerCode=" + momoConfig.getPartnerCode() +
+                "&redirectUrl=" + momoConfig.getReturnUrl() +
+                "&requestId=" + requestId +
+                "&requestType=" + momoConfig.getRequestType();
+        
+        log.debug("🔐 Raw signature: {}", rawSignature);
+        
+        Mac hmacSha256 = Mac.getInstance("HmacSHA256");
+        SecretKeySpec secretKeySpec = new SecretKeySpec(
+                momoConfig.getSecretKey().getBytes(StandardCharsets.UTF_8),
                 "HmacSHA256"
+        );
+        hmacSha256.init(secretKeySpec);
+        
+        byte[] hash = hmacSha256.doFinal(rawSignature.getBytes(StandardCharsets.UTF_8));
+        
+        StringBuilder signature = new StringBuilder();
+        for (byte b : hash) {
+            signature.append(String.format("%02x", b));
+        }
+        
+        String finalSignature = signature.toString();
+        log.debug("🔐 Generated signature: {}", finalSignature);
+        
+        return finalSignature;
+    }
+    
+    /**
+     * Verify signature từ MoMo IPN
+     */
+    public boolean verifySignature(MoMoIPNRequest ipnRequest) {
+        try {
+            String rawSignature = "accessKey=" + momoConfig.getAccessKey() +
+                    "&amount=" + ipnRequest.getAmount() +
+                    "&extraData=" + ipnRequest.getExtraData() +
+                    "&message=" + ipnRequest.getMessage() +
+                    "&orderId=" + ipnRequest.getOrderId() +
+                    "&orderInfo=" + ipnRequest.getOrderInfo() +
+                    "&orderType=" + ipnRequest.getOrderType() +
+                    "&partnerCode=" + ipnRequest.getPartnerCode() +
+                    "&payType=" + ipnRequest.getPayType() +
+                    "&requestId=" + ipnRequest.getRequestId() +
+                    "&responseTime=" + ipnRequest.getResponseTime() +
+                    "&resultCode=" + ipnRequest.getResultCode() +
+                    "&transId=" + ipnRequest.getTransId();
+            
+            Mac hmacSha256 = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(
+                    momoConfig.getSecretKey().getBytes(StandardCharsets.UTF_8),
+                    "HmacSHA256"
             );
-            hmacSHA256.init(secretKeySpec);
+            hmacSha256.init(secretKeySpec);
             
-            byte[] hash = hmacSHA256.doFinal(data.getBytes(StandardCharsets.UTF_8));
+            byte[] hash = hmacSha256.doFinal(rawSignature.getBytes(StandardCharsets.UTF_8));
             
-            // Convert to hex string
-            StringBuilder hexString = new StringBuilder();
+            StringBuilder signature = new StringBuilder();
             for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
+                signature.append(String.format("%02x", b));
             }
             
-            return hexString.toString();
-        } catch (Exception e) {
-            System.err.println("❌ Error generating HMAC signature: " + e.getMessage());
-            throw e;
-        }
-    }
-
-    // ✅ VERIFY SIGNATURE TỪ MOMO CALLBACK
-    public boolean verifySignature(Map<String, Object> params, String signature) {
-        try {
-            // Tạo lại raw signature từ params
-            String rawSignature = String.format(
-                "accessKey=%s&amount=%s&extraData=%s&message=%s&orderId=%s&orderInfo=%s&orderType=%s&partnerCode=%s&payType=%s&requestId=%s&responseTime=%s&resultCode=%s&transId=%s",
-                params.get("accessKey"),
-                params.get("amount"),
-                params.get("extraData"),
-                params.get("message"),
-                params.get("orderId"),
-                params.get("orderInfo"),
-                params.get("orderType"),
-                params.get("partnerCode"),
-                params.get("payType"),
-                params.get("requestId"),
-                params.get("responseTime"),
-                params.get("resultCode"),
-                params.get("transId")
-            );
-
-            String calculatedSignature = generateHmacSHA256(rawSignature, secretKey);
+            String calculatedSignature = signature.toString();
+            boolean isValid = calculatedSignature.equals(ipnRequest.getSignature());
             
-            return calculatedSignature.equals(signature);
+            log.info("🔐 Verify signature: Expected={}, Received={}, Valid={}", 
+                    calculatedSignature, ipnRequest.getSignature(), isValid);
+            
+            return isValid;
+            
         } catch (Exception e) {
-            System.err.println("❌ Error verifying signature: " + e.getMessage());
+            log.error("❌ Error verifying signature: ", e);
             return false;
         }
     }

@@ -1,9 +1,10 @@
 package com.example.cafe.dto;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class LoginDto {
     private String username;
     private String password;
+    private String portal;   
 }

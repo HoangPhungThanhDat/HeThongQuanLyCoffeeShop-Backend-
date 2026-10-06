@@ -1,372 +1,437 @@
-COFFEE SHOP MANAGEMENT SYSTEM - BACKEND
-📋 Giới thiệu
-Hệ thống quản lý quán cà phê được xây dựng với kiến trúc microservices sử dụng Java Spring Boot. Dự án cung cấp các tính năng quản lý toàn diện cho việc vận hành quán cà phê, từ quản lý sản phẩm, đơn hàng đến thanh toán và báo cáo.
-🏗️ Kiến trúc hệ thống
-Dự án được thiết kế theo mô hình Microservices Architecture với các service độc lập:
+<div align="center">
 
-Categories Service: Quản lý danh mục sản phẩm
-Products Service: Quản lý sản phẩm và khuyến mãi
-Orders Service: Xử lý đơn hàng và trạng thái
-Users Service: Quản lý người dùng và phân quyền
-Promotions Service: Quản lý chương trình khuyến mãi
-Bills Service: Xử lý hóa đơn và thanh toán
+<img src="https://raw.githubusercontent.com/github/explore/main/topics/coffee/coffee.png" width="72" alt="coffee icon"/>
 
-⚙️ Công nghệ sử dụng
+# Coffee Shop Management System
+## Backend API
 
-Framework: Spring Boot
-Database: MySQL
-ORM: Spring Data JPA/Hibernate
-Security: Spring Security + JWT
-Real-time Communication: WebSocket
-Build Tool: Maven
-API Documentation: Swagger/OpenAPI
+**Hệ thống quản lý quán cà phê realtime — từ order đến thanh toán, trong một API duy nhất**
 
-👥 Phân quyền hệ thống
-🔐 Admin
+[![Java](https://img.shields.io/badge/Java-17+-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Maven](https://img.shields.io/badge/Maven-Build-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
 
-✅ Quản lý sản phẩm (CRUD): Thêm, xóa, sửa sản phẩm, danh mục, kèm ảnh
-✅ Quản lý khuyến mãi: Tạo, áp dụng khuyến mãi cho sản phẩm/đơn hàng
-✅ Quản lý nhân viên: CRUD thông tin nhân viên (bao gồm ảnh)
-✅ Xem báo cáo tổng quan: Doanh thu, đơn hàng, hóa đơn
+[![JWT](https://img.shields.io/badge/Security-JWT-black?style=flat-square&logo=jsonwebtokens)](https://jwt.io/)
+[![WebSocket](https://img.shields.io/badge/Realtime-WebSocket-4CAF50?style=flat-square&logo=socketdotio&logoColor=white)](https://spring.io/guides/gs/messaging-stomp-websocket/)
+[![MoMo](https://img.shields.io/badge/Payment-MoMo-A50064?style=flat-square)](https://developers.momo.vn/)
+[![VNPay](https://img.shields.io/badge/Payment-VNPay-0066B3?style=flat-square)](https://sandbox.vnpayment.vn/apis/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](./LICENSE)
 
-👨‍💼 Nhân viên
+<br/>
 
-✅ Tìm kiếm, chọn sản phẩm để tạo/sửa đơn hàng
-✅ Quản lý bàn: Chọn bàn, cập nhật trạng thái
-✅ Xem đơn hàng realtime từ khách hàng qua WebSocket
-✅ Xử lý đơn hàng: Xác nhận, chuẩn bị, hoàn thành, thanh toán
-✅ Xem/xuất hóa đơn
-✅ Lưu thông tin thanh toán (tổng tiền, phương thức, trạng thái), liên kết với đơn hàng
+**[📖 Giới thiệu](#-giới-thiệu)** &nbsp;·&nbsp;
+**[🏗️ Kiến trúc](#️-kiến-trúc-hệ-thống)** &nbsp;·&nbsp;
+**[👥 Phân quyền](#-phân-quyền-hệ-thống)** &nbsp;·&nbsp;
+**[🚀 Cài đặt](#-cài-đặt-và-chạy-dự-án)** &nbsp;·&nbsp;
+**[📡 API](#-api-endpoints)** &nbsp;·&nbsp;
+**[🔌 WebSocket](#-websocket-integration)** &nbsp;·&nbsp;
+**[🔒 Bảo mật](#-bảo-mật)**
 
-👤 Khách hàng
+</div>
 
-✅ Chọn sản phẩm từ menu, gắn với bàn
-✅ Gửi đơn hàng trực tiếp, tự động hiển thị trên màn hình nhân viên
-✅ Đồng bộ đơn hàng từ khách hàng đến nhân viên qua WebSocket
-
-📂 Cấu trúc thư mục
-# File Tree: cafe
-**Generated:** 11/12/2025, 7:30:03 PM
-**Root Path:** `h:\HeThongQuanLyCoffeeShop(Backend)\cafe`
-
-```
-├── 📁 .mvn
-│   └── 📁 wrapper
-│       └── 📄 maven-wrapper.properties
-├── 📁 src
-│   ├── 📁 main
-│   │   ├── 📁 java
-│   │   │   └── 📁 com
-│   │   │       └── 📁 example
-│   │   │           └── 📁 cafe
-│   │   │               ├── 📁 config
-│   │   │               │   ├── ☕ MoMoConfig.java
-│   │   │               │   └── ☕ VNPayConfig.java
-│   │   │               ├── 📁 controllers
-│   │   │               │   ├── ☕ AuthController.java
-│   │   │               │   ├── ☕ BillController.java
-│   │   │               │   ├── ☕ CategoryController.java
-│   │   │               │   ├── ☕ MoMoPaymentController.java
-│   │   │               │   ├── ☕ OrderController.java
-│   │   │               │   ├── ☕ OrderItemController.java
-│   │   │               │   ├── ☕ PaymentController.java
-│   │   │               │   ├── ☕ ProductController.java
-│   │   │               │   ├── ☕ PromotionController.java
-│   │   │               │   ├── ☕ TableController.java
-│   │   │               │   └── ☕ UserController.java
-│   │   │               ├── 📁 dto
-│   │   │               │   ├── ☕ BillDTO.java
-│   │   │               │   ├── ☕ LoginDto.java
-│   │   │               │   ├── ☕ MoMoIPNRequest.java
-│   │   │               │   ├── ☕ MoMoPaymentRequest.java
-│   │   │               │   ├── ☕ MoMoPaymentResponse.java
-│   │   │               │   ├── ☕ OrderItemDTO.java
-│   │   │               │   ├── ☕ PaymentApiResponse.java
-│   │   │               │   ├── ☕ PaymentRequest.java
-│   │   │               │   └── ☕ PaymentResponse.java
-│   │   │               ├── 📁 entity
-│   │   │               │   ├── 📁 enums
-│   │   │               │   │   ├── ☕ OrderStatus.java
-│   │   │               │   │   ├── ☕ PaymentMethod.java
-│   │   │               │   │   ├── ☕ PaymentStatus.java
-│   │   │               │   │   ├── ☕ Role.java
-│   │   │               │   │   └── ☕ Status.java
-│   │   │               │   ├── ☕ Bill.java
-│   │   │               │   ├── ☕ Category.java
-│   │   │               │   ├── ☕ Order.java
-│   │   │               │   ├── ☕ OrderItem.java
-│   │   │               │   ├── ☕ Product.java
-│   │   │               │   ├── ☕ Promotion.java
-│   │   │               │   ├── ☕ TableEntity.java
-│   │   │               │   └── ☕ User.java
-│   │   │               ├── 📁 repository
-│   │   │               │   ├── ☕ BillRepository.java
-│   │   │               │   ├── ☕ CategoryRepository.java
-│   │   │               │   ├── ☕ OrderItemRepository.java
-│   │   │               │   ├── ☕ OrderRepository.java
-│   │   │               │   ├── ☕ ProductRepository.java
-│   │   │               │   ├── ☕ PromotionRepository.java
-│   │   │               │   ├── ☕ TableRepository.java
-│   │   │               │   └── ☕ UserRepository.java
-│   │   │               ├── 📁 scheduler
-│   │   │               │   └── ☕ OrderStatusScheduler.java
-│   │   │               ├── 📁 security
-│   │   │               │   ├── 📁 jwt
-│   │   │               │   │   ├── ☕ JwtAuthenticationFilter.java
-│   │   │               │   │   └── ☕ JwtFilter.java
-│   │   │               │   ├── 📁 services
-│   │   │               │   │   ├── 📁 impl
-│   │   │               │   │   │   ├── ☕ BillServiceImpl.java
-│   │   │               │   │   │   ├── ☕ CategoryServiceImpl.java
-│   │   │               │   │   │   ├── ☕ OrderItemServiceImpl.java
-│   │   │               │   │   │   ├── ☕ OrderServiceImpl.java
-│   │   │               │   │   │   ├── ☕ ProductServiceImpl.java
-│   │   │               │   │   │   ├── ☕ PromotionServiceImpl.java
-│   │   │               │   │   │   ├── ☕ TableServiceImpl.java
-│   │   │               │   │   │   └── ☕ UserServiceImpl.java
-│   │   │               │   │   ├── ☕ BillService.java
-│   │   │               │   │   ├── ☕ CategoryService.java
-│   │   │               │   │   ├── ☕ CustomUserDetailsService.java
-│   │   │               │   │   ├── ☕ JwtService.java
-│   │   │               │   │   ├── ☕ OrderItemService.java
-│   │   │               │   │   ├── ☕ OrderService.java
-│   │   │               │   │   ├── ☕ ProductService.java
-│   │   │               │   │   ├── ☕ PromotionService.java
-│   │   │               │   │   ├── ☕ TableService.java
-│   │   │               │   │   └── ☕ UserService.java
-│   │   │               │   └── ☕ SecurityConfig.java
-│   │   │               ├── 📁 services
-│   │   │               │   ├── ☕ MoMoService.java
-│   │   │               │   └── ☕ VNPayService.java
-│   │   │               └── ☕ CafeApplication.java
-│   │   └── 📁 resources
-│   │       ├── 📁 static
-│   │       ├── 📁 templates
-│   │       └── 📄 application.properties
-│   └── 📁 test
-│       └── 📁 java
-│           └── 📁 com
-│               └── 📁 example
-│                   └── 📁 cafe
-│                       └── ☕ CafeApplicationTests.java
-├── 📁 uploads
-│   └── 📁 images
-│       ├── 🖼️ 03feaf05-c980-4b5e-8d95-99fbcb1fb1e4.png
-│       ├── 🖼️ 043b7bc0-8f04-41af-aa68-6e20a5a9972c.png
-│       ├── 🖼️ 06a0b0bc-47a6-4528-b712-5148cfc8a3c4.jpg
-│       ├── 🖼️ 0800419c-152d-43ac-aceb-cf50260c70bf.webp
-│       ├── 🖼️ 0b5e642c-df2a-40b8-8f23-f239e494d360.jpg
-│       ├── 🖼️ 0c902e8e-155e-44b7-a3e7-3938b7567265.jpg
-│       ├── 🖼️ 0d46bbd6-980e-4f18-b081-7aa36aca9ab9.jpg
-│       ├── 🖼️ 21d9a172-0d48-4e4f-8016-c02d2e1ea23f.jpg
-│       ├── 🖼️ 221dcc5e-4ef1-4488-bc72-8195fc1c8235.jpg
-│       ├── 🖼️ 22476fc4-0bcf-43ce-aa25-5d080a4461d1.jpg
-│       ├── 🖼️ 2bf32534-83c7-420e-964a-29e3e9b88e87.jpg
-│       ├── 🖼️ 303547a3-a712-46b7-ab24-88550a45d36b.webp
-│       ├── 🖼️ 30d9b8cf-f632-4612-8347-9be00b629595.jpg
-│       ├── 🖼️ 32a2fa05-9e37-4eea-abb8-43363b2ead9b.jpg
-│       ├── 🖼️ 34f35764-21b7-4ab1-af9d-383c5744038d.webp
-│       ├── 🖼️ 3b56d2dc-3bc0-47f7-871c-6f48656cdc22.jpg
-│       ├── 🖼️ 3be5140b-312e-46d9-bd93-4c858458a3e1.jpg
-│       ├── 🖼️ 3c17358b-8c88-4556-9555-223850e9c8e5.jpg
-│       ├── 🖼️ 40981077-0b72-4491-94be-6dc5df46fd64.jpg
-│       ├── 🖼️ 41fd3e10-7ff1-4bb5-83fa-3781c052fd55.webp
-│       ├── 🖼️ 43d6e9c4-ee2a-4fd4-9ab4-eacd96b2de2b.webp
-│       ├── 🖼️ 459426fb-3042-46e2-8e5a-f53323ca6816.jpg
-│       ├── 🖼️ 48f696a3-c1e1-4449-b424-7e2a0b935784.jpg
-│       ├── 🖼️ 4a3b9112-1616-41ef-b244-d93d951c2fd2.jpg
-│       ├── 🖼️ 4a8ec108-5bbe-4393-b87e-3ed0e795713a.webp
-│       ├── 🖼️ 56b0539b-edbe-4b7f-a4e7-45354771eb75.jpg
-│       ├── 🖼️ 5817c56f-08b2-4cf3-bd60-6e6c37e9369f.png
-│       ├── 🖼️ 58770157-f82d-42c0-af30-6b9ab7bf1907.jpg
-│       ├── 🖼️ 5b901edb-3951-4d06-be20-74585a6e2e2e.png
-│       ├── 🖼️ 5bac1d45-b4bd-4194-9263-2b27fe6b8fe5.png
-│       ├── 🖼️ 607cc6ba-10b7-46dd-8f70-0c456d662e0d.jpg
-│       ├── 🖼️ 6977941a-ccac-482d-b2b8-8c7dc2ce9481.jpg
-│       ├── 🖼️ 6d2fb178-d00c-4bfb-a9e4-d6eb05a09520.jpg
-│       ├── 🖼️ 760c0e7f-7e19-45de-84b0-10292de9d789.jpg
-│       ├── 🖼️ 789eae10-2ec2-460c-86d3-a9fa5faf996d.jpg
-│       ├── 🖼️ 7e995cdc-c17e-45d7-a5a9-051fb71c6da1.png
-│       ├── 🖼️ 8926fdb9-22b9-458d-913f-cc9113102974.jpg
-│       ├── 🖼️ 8c3ecca7-22c5-41d2-bce9-eae5e2bf1d70.jpg
-│       ├── 🖼️ 8e4054f4-00ac-4e24-b1e2-033d2fb65412.webp
-│       ├── 🖼️ 976765c7-750c-4905-86ae-5277c081a604.jpg
-│       ├── 🖼️ 9b3eb447-4dbb-4572-8f63-c9cfe4f9fe82.webp
-│       ├── 🖼️ 9be7dd70-37e5-4c21-a2e7-c0b06b1c9a49.jpg
-│       ├── 🖼️ 9cde48e5-d36c-45e2-b535-88392ad2ad38.webp
-│       ├── 🖼️ aa4feca1-564e-4352-8b98-35774f7f2e30.jpg
-│       ├── 🖼️ ab643751-26a7-486f-9b14-166e0b0f6ea5.png
-│       ├── 🖼️ ad56a09e-19da-405f-848b-e08dcf469d88.jpg
-│       ├── 🖼️ af66982c-3941-45d3-a7fd-b7151c716259.jpg
-│       ├── 🖼️ b02c012b-4cd1-4c99-b952-d80edd142f06.webp
-│       ├── 🖼️ b4754aef-6b91-4a55-ac99-a441af4f763e.png
-│       ├── 🖼️ b4dc759c-e175-47b2-87d9-2ae48f8c6a32.jpg
-│       ├── 🖼️ c481f2e8-54d7-49d1-825a-6672f3846bd7.jpg
-│       ├── 🖼️ c7506314-eb88-4d58-a36a-de4d39057699.jpg
-│       ├── 🖼️ c8cb908d-754b-4449-a398-1e1f756df302.png
-│       ├── 🖼️ d1314cc3-1a90-4a81-8254-ab77ae377a67.jpg
-│       ├── 🖼️ d3d54e10-4f32-488e-859c-d9e2fd1e3cd5.jpg
-│       ├── 🖼️ d3ec1a6f-c094-4e39-b8b6-56c6b55d3fd9.webp
-│       ├── 🖼️ d47e9879-8c95-4c77-9cc6-56eaffd6fea1.png
-│       ├── 🖼️ dc73dee3-c8d3-440c-be8a-f663e3251d7f.png
-│       ├── 🖼️ dc9d1f3f-f7fa-444a-9635-1c9296c018ec.png
-│       ├── 🖼️ df57b44d-9f32-46e8-a70a-a6a4d418b3dd.jpg
-│       ├── 🖼️ e05c430c-6111-4903-972b-e275e8c1262b.jpg
-│       ├── 🖼️ e1bb5206-6445-45f6-80b1-3246e6a68148.png
-│       ├── 🖼️ e6dbb7a3-8693-4b6b-8e43-0c09fe87dc41.jpg
-│       ├── 🖼️ e9baf228-06ee-453d-8855-8c3f0d2e84dc.jpg
-│       ├── 🖼️ ec6005d1-b660-4822-acc4-9b0fe3ebfced.jpg
-│       ├── 🖼️ ef3f8b1a-5179-4ece-bccb-5baf7a96b04a.jpg
-│       ├── 🖼️ f1eb8801-eeda-4890-b1fb-b1aca42de8d8.jpg
-│       ├── 🖼️ f36e7f15-a72d-4f2f-85f8-d0cba151da41.jpg
-│       ├── 🖼️ f634f538-ce99-4306-a3e0-a436586589f6.jpg
-│       ├── 🖼️ f645814a-3fa3-40a3-8382-e2afcb395f0e.png
-│       ├── 🖼️ f6e973f4-036b-4c3d-93ff-e3d6526eac8c.jpg
-│       ├── 🖼️ fc029d1a-547e-47ad-9016-8c07a5768891.jpg
-│       ├── 🖼️ fe301c3a-ed45-4c72-9954-c57cd0ecd7fd.png
-│       └── 🖼️ ffa15bd0-e125-418a-80f2-4e3d46c9fd1a.jpg
-├── ⚙️ .gitattributes
-├── ⚙️ .gitignore
-├── 📝 README.md
-├── 📄 mvnw
-├── 📄 mvnw.cmd
-└── ⚙️ pom.xml
-```
-
----
-*Generated by FileTree Pro Extension*
+<br/>
 
 ---
 
-Hệ thống sử dụng các bảng chính:
+## 📋 Giới thiệu
 
-categories: Danh mục sản phẩm
-products: Thông tin sản phẩm
-orders: Đơn hàng
-order_items: Chi tiết đơn hàng
-users: Người dùng (Admin, Nhân viên, Khách hàng)
-bills: Hóa đơn thanh toán
-promotions: Chương trình khuyến mãi
-promotion_products: Liên kết khuyến mãi với sản phẩm
-tables: Bàn trong quán
+**Coffee Shop Management System (Backend)** là API phục vụ toàn bộ nghiệp vụ vận hành quán cà phê: quản lý sản phẩm, danh mục, bàn, đơn hàng theo thời gian thực, hóa đơn và thanh toán (tích hợp **MoMo**, **VNPay**), cùng hệ thống phân quyền theo vai trò cho Admin / Nhân viên / Khách hàng.
 
-🚀 Cài đặt và chạy dự án
-Yêu cầu hệ thống
+Dự án được xây dựng theo hướng **domain-oriented, service-based**, mỗi nghiệp vụ (Category, Product, Order, User, Promotion, Bill) được tách rõ theo `Controller → Service → Repository → Entity`, dễ mở rộng và bảo trì.
 
-Java 17 hoặc cao hơn
-Maven 3.8+
-MySQL 8.0+ hoặc PostgreSQL 13+
-IDE: IntelliJ IDEA, Eclipse, hoặc VS Code
+> 🔗 Đây là phần **Backend**, phối hợp với Frontend Admin Dashboard (React + Vite) tại `http://localhost:5173`.
 
-Các bước cài đặt
+<br/>
 
-Clone repository
+### 🎯 Vì sao dự án này đáng chú ý
 
-bashgit clone <repository-url>
-cd CAFE
+| | |
+|---|---|
+| ⚡ | **Realtime order** — khách gọi món, nhân viên thấy ngay qua WebSocket, không cần refresh |
+| 💳 | **Thanh toán thật** — tích hợp trực tiếp MoMo & VNPay, có xử lý IPN callback |
+| 🔐 | **Phân quyền rõ ràng** — Admin / Nhân viên / Khách hàng, mỗi vai trò một luồng nghiệp vụ riêng |
+| 🧩 | **Kiến trúc tách lớp** — Controller / Service / Repository / Entity, dễ test và mở rộng |
 
-Cấu hình database
+---
 
-Tạo database mới và cập nhật file application.properties:
-propertiesspring.datasource.url=jdbc:mysql://localhost:3306/cafe_db
+## 🏗️ Kiến trúc hệ thống
+
+Dự án tổ chức theo các nhóm nghiệp vụ (domain) độc lập, giao tiếp qua REST API:
+
+| Domain | Chức năng |
+|---|---|
+| **Categories** | Quản lý danh mục sản phẩm |
+| **Products** | Quản lý sản phẩm và liên kết khuyến mãi |
+| **Orders / Order Items** | Xử lý đơn hàng, chi tiết đơn và trạng thái |
+| **Users** | Quản lý người dùng và phân quyền (Admin / Nhân viên / Khách hàng) |
+| **Promotions** | Quản lý chương trình khuyến mãi |
+| **Bills / Payments** | Xử lý hóa đơn, thanh toán qua **MoMo** & **VNPay** |
+| **Tables** | Quản lý bàn và trạng thái bàn |
+
+Realtime giữa khách hàng ↔ nhân viên được đảm bảo qua **WebSocket**, giúp đơn hàng mới hiển thị ngay lập tức trên màn hình vận hành.
+
+```mermaid
+flowchart LR
+    subgraph Client["🖥️ Client"]
+        A[Khách hàng<br/>đặt món]
+        B[Nhân viên<br/>Admin Dashboard]
+    end
+
+    subgraph API["☕ Cafe Backend · Spring Boot"]
+        C[Controllers]
+        D[Services]
+        E[Repositories]
+        F[(MySQL)]
+        G[WebSocket<br/>/ws]
+    end
+
+    subgraph Payment["💳 Cổng thanh toán"]
+        H[MoMo]
+        I[VNPay]
+    end
+
+    A -- REST API --> C
+    B -- REST API --> C
+    C --> D --> E --> F
+    D <-- realtime --> G
+    G -- push order mới --> B
+    D -- tạo giao dịch --> H
+    D -- tạo giao dịch --> I
+    H -- IPN callback --> C
+    I -- Return URL --> C
+```
+
+**Luồng một đơn hàng điển hình:**
+
+```mermaid
+sequenceDiagram
+    participant KH as 👤 Khách hàng
+    participant WS as 🔌 WebSocket
+    participant NV as 👨‍💼 Nhân viên
+    participant API as ☕ Backend API
+    participant PAY as 💳 MoMo/VNPay
+
+    KH->>API: Gửi đơn hàng (POST /api/orders)
+    API->>WS: Publish /topic/orders
+    WS-->>NV: Nhận đơn hàng mới (realtime)
+    NV->>API: Xác nhận & cập nhật trạng thái
+    NV->>API: Tạo hóa đơn (POST /api/bills)
+    API->>PAY: Khởi tạo giao dịch thanh toán
+    PAY-->>API: IPN / Return callback
+    API-->>NV: Cập nhật trạng thái thanh toán
+```
+
+---
+
+## ⚙️ Công nghệ sử dụng
+
+| Hạng mục | Công nghệ |
+|---|---|
+| **Framework** | Spring Boot 3 |
+| **Ngôn ngữ** | Java 17+ |
+| **Database** | MySQL 8.0+ |
+| **ORM** | Spring Data JPA / Hibernate |
+| **Security** | Spring Security + JWT |
+| **Realtime** | WebSocket (STOMP) |
+| **Thanh toán** | MoMo API, VNPay API |
+| **Build Tool** | Maven |
+| **API Docs** | Swagger / OpenAPI |
+
+---
+
+## 👥 Phân quyền hệ thống
+
+<table>
+<tr>
+<td width="33%" valign="top">
+
+### 🔐 Admin
+- CRUD sản phẩm, danh mục (kèm ảnh)
+- Tạo & áp dụng khuyến mãi cho sản phẩm/đơn hàng
+- CRUD nhân viên (kèm ảnh)
+- Xem báo cáo tổng quan: doanh thu, đơn hàng, hóa đơn
+
+</td>
+<td width="33%" valign="top">
+
+### 👨‍💼 Nhân viên
+- Tìm kiếm, chọn sản phẩm để tạo/sửa đơn hàng
+- Quản lý bàn: chọn bàn, cập nhật trạng thái
+- Xem đơn hàng realtime qua WebSocket
+- Xác nhận, chuẩn bị, hoàn thành, thanh toán đơn
+- Xem/xuất hóa đơn, lưu thông tin thanh toán
+
+</td>
+<td width="33%" valign="top">
+
+### 👤 Khách hàng
+- Chọn sản phẩm từ menu, gắn với bàn
+- Gửi đơn hàng trực tiếp
+- Đơn hàng đồng bộ tức thời tới nhân viên qua WebSocket
+
+</td>
+</tr>
+</table>
+
+---
+
+## 📂 Cấu trúc thư mục
+
+```
+cafe/
+├── src/main/java/com/example/cafe/
+│   ├── config/                    # Cấu hình bên thứ 3
+│   │   ├── MoMoConfig.java
+│   │   └── VNPayConfig.java
+│   │
+│   ├── controllers/               # REST Controllers
+│   │   ├── AuthController.java
+│   │   ├── CategoryController.java
+│   │   ├── ProductController.java
+│   │   ├── OrderController.java
+│   │   ├── OrderItemController.java
+│   │   ├── UserController.java
+│   │   ├── PromotionController.java
+│   │   ├── TableController.java
+│   │   ├── BillController.java
+│   │   ├── PaymentController.java
+│   │   └── MoMoPaymentController.java
+│   │
+│   ├── dto/                       # Data Transfer Objects
+│   │   ├── LoginDto.java
+│   │   ├── BillDTO.java
+│   │   ├── OrderItemDTO.java
+│   │   ├── PaymentRequest.java / PaymentResponse.java
+│   │   └── MoMoPaymentRequest.java / MoMoPaymentResponse.java / MoMoIPNRequest.java
+│   │
+│   ├── entity/                    # JPA Entities
+│   │   ├── enums/                 # OrderStatus, PaymentMethod, PaymentStatus, Role, Status
+│   │   ├── User.java / Category.java / Product.java
+│   │   ├── Order.java / OrderItem.java
+│   │   ├── Promotion.java / TableEntity.java / Bill.java
+│   │
+│   ├── repository/                # Spring Data JPA Repositories
+│   │
+│   ├── security/
+│   │   ├── jwt/                   # JwtFilter, JwtAuthenticationFilter
+│   │   ├── services/
+│   │   │   ├── impl/              # Triển khai nghiệp vụ (*ServiceImpl)
+│   │   │   ├── JwtService.java
+│   │   │   └── CustomUserDetailsService.java
+│   │   └── SecurityConfig.java
+│   │
+│   ├── services/                  # Tích hợp thanh toán
+│   │   ├── MoMoService.java
+│   │   └── VNPayService.java
+│   │
+│   ├── scheduler/
+│   │   └── OrderStatusScheduler.java   # Tự động cập nhật trạng thái đơn hàng
+│   │
+│   └── CafeApplication.java
+│
+├── src/main/resources/
+│   └── application.properties
+│
+├── uploads/images/                # Ảnh sản phẩm / nhân viên được upload
+├── pom.xml
+├── mvnw / mvnw.cmd
+└── README.md
+```
+
+---
+
+## 🗄️ Thiết kế cơ sở dữ liệu
+
+| Bảng | Mô tả |
+|---|---|
+| `categories` | Danh mục sản phẩm |
+| `products` | Thông tin sản phẩm |
+| `orders` | Đơn hàng |
+| `order_items` | Chi tiết đơn hàng |
+| `users` | Người dùng (Admin, Nhân viên, Khách hàng) |
+| `bills` | Hóa đơn thanh toán |
+| `promotions` | Chương trình khuyến mãi |
+| `promotion_products` | Liên kết khuyến mãi ↔ sản phẩm |
+| `tables` | Bàn trong quán |
+
+```mermaid
+erDiagram
+    USERS ||--o{ ORDERS : "tạo"
+    CATEGORIES ||--o{ PRODUCTS : "chứa"
+    PRODUCTS ||--o{ ORDER_ITEMS : "thuộc"
+    ORDERS ||--o{ ORDER_ITEMS : "gồm"
+    ORDERS ||--|| BILLS : "phát sinh"
+    ORDERS }o--|| TABLES : "gán vào"
+    PRODUCTS ||--o{ PROMOTION_PRODUCTS : "áp dụng"
+    PROMOTIONS ||--o{ PROMOTION_PRODUCTS : "áp dụng"
+
+    USERS {
+        bigint id PK
+        string name
+        string role
+    }
+    PRODUCTS {
+        bigint id PK
+        string name
+        decimal price
+        bigint category_id FK
+    }
+    ORDERS {
+        bigint id PK
+        bigint user_id FK
+        bigint table_id FK
+        string status
+    }
+    BILLS {
+        bigint id PK
+        bigint order_id FK
+        decimal total
+        string payment_status
+    }
+```
+
+---
+
+## 🚀 Cài đặt và chạy dự án
+
+### Yêu cầu hệ thống
+
+- Java `17+`
+- Maven `3.8+`
+- MySQL `8.0+`
+- IDE: IntelliJ IDEA / Eclipse / VS Code
+
+### Các bước cài đặt
+
+**1. Clone repository**
+```bash
+git clone <repository-url>
+cd cafe
+```
+
+**2. Cấu hình database**
+
+Tạo database mới và cập nhật `src/main/resources/application.properties`:
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/cafe_db
 spring.datasource.username=your_username
 spring.datasource.password=your_password
 spring.jpa.hibernate.ddl-auto=update
-
-Build project
-
-bash./mvnw clean install
-
-Chạy ứng dụng
-
-bash./mvnw spring-boot:run
 ```
 
-Hoặc sử dụng IDE để run `CafeApplication.java`
+**3. Build project**
+```bash
+./mvnw clean install
+```
 
-5. **Truy cập ứng dụng**
-- API Base URL: `http://localhost:8080`
+**4. Chạy ứng dụng**
+```bash
+./mvnw spring-boot:run
+```
+Hoặc chạy trực tiếp `CafeApplication.java` từ IDE.
+
+**5. Truy cập ứng dụng**
+
+API Base URL: **http://localhost:8080**
+
+---
 
 ## 📡 API Endpoints
 
-### Authentication
+<details open>
+<summary><b>🔑 Authentication</b></summary>
+
 ```
-POST /api/auth/login       - Đăng nhập
-POST /api/auth/register    - Đăng ký
-POST /api/auth/refresh     - Làm mới token
+POST   /api/auth/login       Đăng nhập
+POST   /api/auth/register    Đăng ký
+POST   /api/auth/refresh     Làm mới token
+```
+</details>
+
+<details>
+<summary><b>📦 Products</b></summary>
+
+```
+GET    /api/products              Danh sách sản phẩm
+GET    /api/products/{id}         Chi tiết sản phẩm
+POST   /api/products              Tạo sản phẩm        (Admin)
+PUT    /api/products/{id}         Cập nhật sản phẩm    (Admin)
+DELETE /api/products/{id}         Xóa sản phẩm         (Admin)
+```
+</details>
+
+<details>
+<summary><b>📋 Orders</b></summary>
+
+```
+GET    /api/orders                Danh sách đơn hàng
+GET    /api/orders/{id}           Chi tiết đơn hàng
+POST   /api/orders                Tạo đơn hàng
+PUT    /api/orders/{id}/status    Cập nhật trạng thái
+DELETE /api/orders/{id}           Hủy đơn hàng
+```
+</details>
+
+<details>
+<summary><b>💰 Bills</b></summary>
+
+```
+GET    /api/bills                 Danh sách hóa đơn
+GET    /api/bills/{id}            Chi tiết hóa đơn
+POST   /api/bills                 Tạo hóa đơn
+PUT    /api/bills/{id}/payment    Xử lý thanh toán
+```
+</details>
+
+> 💡 Danh mục, khuyến mãi, bàn, người dùng đều có bộ endpoint CRUD tương ứng theo cùng convention REST — xem chi tiết trong Swagger UI tại `/swagger-ui.html` khi chạy ứng dụng.
+
+---
+
+## 🔌 WebSocket Integration
+
+Hệ thống dùng **WebSocket (STOMP)** để đồng bộ đơn hàng realtime giữa khách hàng và nhân viên:
+
+| Thành phần | Giá trị |
+|---|---|
+| **Connect endpoint** | `/ws` |
+| **Subscribe** | `/topic/orders` — nhận thông báo đơn hàng mới |
+| **Subscribe** | `/topic/orders/{orderId}` — theo dõi trạng thái một đơn hàng cụ thể |
+
+---
+
+## 🔒 Bảo mật
+
+- **JWT Authentication** — xác thực theo access token & refresh token
+- **Role-based Access Control** — phân quyền theo vai trò (Admin / Nhân viên / Khách hàng)
+- **Password Encryption** — mã hóa mật khẩu bằng BCrypt
+- **CORS Configuration** — cho phép truy cập có kiểm soát từ Frontend
+
+---
+
+## 💳 Tích hợp thanh toán
+
+| Cổng thanh toán | Trạng thái |
+|---|---|
+| **MoMo** | `MoMoConfig`, `MoMoService`, `MoMoPaymentController`, xử lý IPN callback |
+| **VNPay** | `VNPayConfig`, `VNPayService` |
+
+---
+
+## 🧪 Testing
+
+```bash
+./mvnw test
 ```
 
-### Products
-```
-GET    /api/products              - Lấy danh sách sản phẩm
-GET    /api/products/{id}         - Chi tiết sản phẩm
-POST   /api/products              - Tạo sản phẩm (Admin)
-PUT    /api/products/{id}         - Cập nhật sản phẩm (Admin)
-DELETE /api/products/{id}         - Xóa sản phẩm (Admin)
-```
+---
 
-### Orders
-```
-GET    /api/orders                - Danh sách đơn hàng
-GET    /api/orders/{id}           - Chi tiết đơn hàng
-POST   /api/orders                - Tạo đơn hàng
-PUT    /api/orders/{id}/status    - Cập nhật trạng thái
-DELETE /api/orders/{id}           - Hủy đơn hàng
-```
+## 📝 Biến môi trường
 
-### Bills
-```
-GET    /api/bills                 - Danh sách hóa đơn
-GET    /api/bills/{id}            - Chi tiết hóa đơn
-POST   /api/bills                 - Tạo hóa đơn
-PUT    /api/bills/{id}/payment    - Thanh toán
-🔌 WebSocket Integration
-Hệ thống sử dụng WebSocket để cập nhật đơn hàng realtime:
-Connect endpoint: /ws
-Subscribe topics:
+Cấu hình trong `application.properties` (hoặc file `.env` tương ứng):
 
-/topic/orders - Nhận thông báo đơn hàng mới
-/topic/orders/{orderId} - Theo dõi trạng thái đơn hàng cụ thể
-
-🔒 Security
-
-JWT Authentication: Token-based authentication với access token và refresh token
-Role-based Access Control: Phân quyền theo vai trò (Admin, Nhân viên, Khách hàng)
-Password Encryption: Mã hóa mật khẩu sử dụng BCrypt
-CORS Configuration: Cấu hình CORS cho phép truy cập từ frontend
-
-📊 Features
-Quản lý sản phẩm
-
-CRUD sản phẩm với hình ảnh
-Phân loại theo danh mục
-Quản lý giá và tồn kho
-
-Quản lý đơn hàng
-
-Tạo đơn hàng từ menu
-Cập nhật trạng thái realtime
-Gán đơn hàng với bàn
-Xác nhận và xử lý đơn
-
-Quản lý thanh toán
-
-Tạo hóa đơn tự động
-Nhiều phương thức thanh toán
-Lưu lịch sử giao dịch
-
-Báo cáo
-
-Doanh thu theo thời gian
-Thống kê đơn hàng
-Top sản phẩm bán chạy
-
-🧪 Testing
-Chạy unit tests:
-bash./mvnw test
-📝 Environment Variables
-Tạo file .env hoặc cấu hình trong application.properties:
-properties# Database
+```properties
+# Database
 DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=cafe_db
@@ -380,26 +445,61 @@ JWT_EXPIRATION=86400000
 # Upload
 UPLOAD_DIR=./uploads
 MAX_FILE_SIZE=10MB
-🤝 Contributing
+```
 
-Fork project
-Tạo branch mới (git checkout -b feature/AmazingFeature)
-Commit changes (git commit -m 'Add some AmazingFeature')
-Push to branch (git push origin feature/AmazingFeature)
-Tạo Pull Request
+---
 
-📄 License
-Dự án được phân phối dưới giấy phép MIT. Xem file LICENSE để biết thêm chi tiết.
-👨‍💻 Contact
----Hoàng Đạt---
-Email: dat147714@gmail.com
+## 🗺️ Roadmap
 
-🙏 Acknowledgments
+- [x] CRUD sản phẩm, danh mục, bàn, người dùng
+- [x] Xử lý đơn hàng realtime qua WebSocket
+- [x] Tích hợp thanh toán MoMo & VNPay
+- [x] Phân quyền theo vai trò (JWT + Spring Security)
+- [ ] Tích hợp Swagger/OpenAPI đầy đủ cho toàn bộ endpoint
+- [ ] Viết unit test / integration test cho các service chính
+- [ ] Thêm caching (Redis) cho danh sách sản phẩm/danh mục
+- [ ] Dockerize backend + MySQL cho môi trường triển khai
 
-Spring Boot Documentation
-Spring Security
-WebSocket Protocol
-JWT Implementation
+---
 
+## 🤝 Contributing
 
-Made with ☕ and ❤️
+1. Fork dự án
+2. Tạo branch mới: `git checkout -b feature/AmazingFeature`
+3. Commit thay đổi: `git commit -m 'Add some AmazingFeature'`
+4. Push lên branch: `git push origin feature/AmazingFeature`
+5. Mở một Pull Request
+
+---
+
+## 📄 License
+
+Dự án được phân phối theo giấy phép **MIT** — xem chi tiết tại [LICENSE](./LICENSE).
+
+---
+
+## 📞 Liên hệ
+
+<div align="center">
+
+**Hoàng Đạt**
+
+[![Email](https://img.shields.io/badge/Email-dat147714%40gmail.com-EA4335?style=flat-square&logo=gmail&logoColor=white)](mailto:dat147714@gmail.com)
+[![GitHub](https://img.shields.io/badge/GitHub-HoangPhungThanhDat-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/HoangPhungThanhDat)
+
+</div>
+
+---
+
+## 🙏 Acknowledgments
+
+- [Spring Boot Documentation](https://spring.io/projects/spring-boot)
+- [Spring Security](https://spring.io/projects/spring-security)
+- [WebSocket Protocol](https://spring.io/guides/gs/messaging-stomp-websocket/)
+- [JWT (jwt.io)](https://jwt.io/)
+
+<div align="center">
+
+**Made with ☕ and ❤️**
+
+</div>
