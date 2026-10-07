@@ -1,6 +1,5 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/github/explore/main/topics/coffee/coffee.png" width="72" alt="coffee icon"/>
 
 # Coffee Shop Management System
 ## Backend API
@@ -484,7 +483,7 @@ Dự án được phân phối theo giấy phép **MIT** — xem chi tiết tạ
 
 **Hoàng Đạt**
 
-[![Email](https://img.shields.io/badge/Email-dat147714%40gmail.com-EA4335?style=flat-square&logo=gmail&logoColor=white)](mailto:dat147714@gmail.com)
+[![Email](https://img.shields.io/badge/Email-hoangdat.engineer%40gmail.com-EA4335?style=flat-square&logo=gmail&logoColor=white)](mailto:hoangdat.engineer@gmail.com)
 [![GitHub](https://img.shields.io/badge/GitHub-HoangPhungThanhDat-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/HoangPhungThanhDat)
 
 </div>
